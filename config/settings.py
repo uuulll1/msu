@@ -100,12 +100,9 @@ TEMPLATES = [
 WSGI_APPLICATION = "config.wsgi.application"
 
 # База данных: SQLite по умолчанию, PostgreSQL — через DATABASE_URL
-DATABASES = {
-    "default": dj_database_url.config(
-        default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
-        conn_max_age=600,
-    )
-}
+# Пустая строка (DATABASE_URL= в .env) тоже означает SQLite по умолчанию
+DATABASE_URL = os.environ.get("DATABASE_URL") or f"sqlite:///{BASE_DIR / 'db.sqlite3'}"
+DATABASES = {"default": dj_database_url.parse(DATABASE_URL, conn_max_age=600)}
 
 AUTH_USER_MODEL = "accounts.User"
 
