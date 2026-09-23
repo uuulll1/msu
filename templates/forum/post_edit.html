@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% load markdown_tags %}
+{% block title %}Редактирование сообщения{% endblock %}
+
+{% block content %}
+<section class="page-hero page-hero--compact">
+  <div class="container">
+    <nav class="crumbs crumbs--light" aria-label="Навигация">
+      <a href="{% url 'forum:index' %}">Форум</a>
+      <a href="{{ post.topic.subject.get_forum_url }}">{{ post.topic.subject.name }}</a>
+      <a href="{{ post.topic.get_absolute_url }}">{{ post.topic.title|truncatechars:40 }}</a>
+      <span>Редактирование</span>
+    </nav>
+    <h1 class="page-hero__title">Редактирование сообщения</h1>
+  </div>
+</section>
+
+<div class="container container--narrow section">
+  {% if preview %}
+    <div class="preview">
+      <p class="preview__label">Предпросмотр</p>
+      <div class="prose">{{ preview|markdown }}</div>
+    </div>
+  {% endif %}
+  <form method="post" class="form form--card">
+    {% csrf_token %}
+    {% include "partials/field.html" with field=form.body %}
+    {% include "partials/markdown_help.html" %}
+    <div class="form__actions">
+      <a class="btn btn--outline" href="{{ post.get_absolute_url }}">Отмена</a>
+      <button type="submit" name="preview" value="1" class="btn btn--outline">Предпросмотр</button>
+      <button type="submit" class="btn btn--primary">Сохранить</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

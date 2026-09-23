@@ -1,0 +1,19 @@
+{% load portal_tags %}
+<li class="topic-row{% if topic.is_pinned %} topic-row--pinned{% endif %}">
+  <div class="topic-row__main">
+    <a class="topic-row__title math-scope" href="{{ topic.get_absolute_url }}">
+      {% if topic.is_pinned %}<span class="pill pill--gold">Закреплено</span>{% endif %}
+      {% if topic.is_locked %}<span class="pill">Закрыто</span>{% endif %}
+      {{ topic.title }}
+    </a>
+    <p class="topic-row__meta">
+      {% if show_subject %}<a href="{{ topic.subject.get_forum_url }}">{{ topic.subject.name }}</a> · {% endif %}
+      {% if topic.author %}{{ topic.author.username }}{% else %}удалённый пользователь{% endif %}
+      · <time datetime="{{ topic.last_activity_at|date:'c' }}">{{ topic.last_activity_at|timesince }} назад</time>
+    </p>
+  </div>
+  <div class="topic-row__stats">
+    <span><strong>{{ topic.replies_count }}</strong> {{ topic.replies_count|plural_ru:"ответ,ответа,ответов" }}</span>
+    {% if not compact %}<span><strong>{{ topic.views_count }}</strong> {{ topic.views_count|plural_ru:"просмотр,просмотра,просмотров" }}</span>{% endif %}
+  </div>
+</li>

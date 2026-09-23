@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% load markdown_tags %}
+{% block title %}Новая тема — {{ subject.name }}{% endblock %}
+
+{% block content %}
+<section class="page-hero page-hero--compact">
+  <div class="container">
+    <nav class="crumbs crumbs--light" aria-label="Навигация">
+      <a href="{% url 'forum:index' %}">Форум</a><a href="{{ subject.get_forum_url }}">{{ subject.name }}</a><span>Новая тема</span>
+    </nav>
+    <h1 class="page-hero__title">Новая тема</h1>
+    <p class="page-hero__lead">Раздел: {{ subject.name }}</p>
+  </div>
+</section>
+
+<div class="container container--narrow section">
+  {% if preview %}
+    <div class="preview">
+      <p class="preview__label">Предпросмотр</p>
+      <h2 class="preview__title">{{ form.title.value }}</h2>
+      <div class="prose">{{ preview|markdown }}</div>
+    </div>
+  {% endif %}
+  <form method="post" class="form form--card">
+    {% csrf_token %}
+    {% include "partials/form_errors.html" %}
+    {% include "partials/field.html" with field=form.title %}
+    {% include "partials/field.html" with field=form.body %}
+    {% include "partials/markdown_help.html" %}
+    <div class="form__actions">
+      <a class="btn btn--outline" href="{{ subject.get_forum_url }}">Отмена</a>
+      <button type="submit" name="preview" value="1" class="btn btn--outline">Предпросмотр</button>
+      <button type="submit" class="btn btn--primary">Создать тему</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

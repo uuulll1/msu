@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% load portal_tags %}
+{% block title %}Форум{% endblock %}
+
+{% block content %}
+<section class="page-hero page-hero--compact">
+  <div class="container">
+    <nav class="crumbs crumbs--light" aria-label="Навигация"><a href="{% url 'core:home' %}">Главная</a><span>Форум</span></nav>
+    <h1 class="page-hero__title">Форум</h1>
+    <p class="page-hero__lead">У каждого предмета — своя ветка. Задавайте вопросы, разбирайте задачи, пишите формулы в LaTeX.</p>
+  </div>
+</section>
+
+<div class="container section split">
+  <div class="split__main">
+    {% for faculty, subjects in faculties %}
+      <section class="forum-section">
+        <header class="section__head"><p class="eyebrow">{{ faculty.short_name }}</p><h2 class="section__title section__title--sm">{{ faculty.name }}</h2></header>
+        <ul class="board-list">
+          {% for subject in subjects %}
+            <li class="board">
+              <div class="board__main">
+                <a class="board__title" href="{{ subject.get_forum_url }}">{{ subject.name }}</a>
+                {% if subject.last_activity %}
+                  <span class="board__meta">Последняя активность: {{ subject.last_activity|timesince }} назад</span>
+                {% else %}
+                  <span class="board__meta">Пока нет тем</span>
+                {% endif %}
+              </div>
+              <div class="board__stats">
+                <span><strong>{{ subject.topics_total }}</strong> {{ subject.topics_total|plural_ru:"тема,темы,тем" }}</span>
+                <span><strong>{{ subject.posts_total }}</strong> {{ subject.posts_total|plural_ru:"сообщение,сообщения,сообщений" }}</span>
+              </div>
+            </li>
+          {% endfor %}
+        </ul>
+      </section>
+    {% empty %}
+      <p class="empty">Разделы форума появятся после добавления предметов.</p>
+    {% endfor %}
+  </div>
+
+  <aside class="split__side">
+    <div class="side-box">
+      <h2 class="side-box__title">Недавняя активность</h2>
+      <ul class="topic-list topic-list--compact">
+        {% for topic in recent_topics %}
+          {% include "partials/topic_row.html" with show_subject=True compact=True %}
+        {% empty %}
+          <li class="empty">Пока тихо.</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </aside>
+</div>
+{% endblock %}

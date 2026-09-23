@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}{% if is_edit %}Редактирование материала{% else %}Загрузка материала{% endif %}{% endblock %}
+
+{% block content %}
+<section class="page-hero page-hero--compact">
+  <div class="container">
+    <nav class="crumbs crumbs--light" aria-label="Навигация">
+      <a href="{% url 'core:home' %}">Главная</a><a href="{% url 'materials:search' %}">Материалы</a>
+      <span>{% if is_edit %}Редактирование{% else %}Загрузка{% endif %}</span>
+    </nav>
+    <h1 class="page-hero__title">{% if is_edit %}Редактирование{% else %}Поделиться материалом{% endif %}</h1>
+    <p class="page-hero__lead">
+      {% if user.is_moderator %}Вы модератор — материал будет опубликован сразу.
+      {% else %}После загрузки материал проверит модератор — обычно это занимает немного времени.{% endif %}
+    </p>
+  </div>
+</section>
+
+<div class="container container--narrow section">
+  <form method="post" enctype="multipart/form-data" class="form form--card" novalidate>
+    {% csrf_token %}
+    {% include "partials/form_errors.html" %}
+
+    <fieldset class="form__group">
+      <legend>Основное</legend>
+      {% include "partials/field.html" with field=form.title %}
+      <div class="form__row">
+        {% include "partials/field.html" with field=form.subject %}
+        {% include "partials/field.html" with field=form.material_type %}
+      </div>
+      <div class="form__row">
+        {% include "partials/field.html" with field=form.semester %}
+        {% include "partials/field.html" with field=form.academic_year %}
+      </div>
+      {% include "partials/field.html" with field=form.teacher %}
+      <datalist id="teacher-suggestions">
+        {% for name in teacher_suggestions %}<option value="{{ name }}">{% endfor %}
+      </datalist>
+    </fieldset>
+
+    <fieldset class="form__group">
+      <legend>Файл</legend>
+      {% if is_edit and material.file %}
+        <p class="field__help">Текущий файл: <strong>{{ material.download_filename }}</strong>. Загрузите новый, чтобы заменить.</p>
+      {% endif %}
+      {% include "partials/field.html" with field=form.file %}
+    </fieldset>
+
+    <fieldset class="form__group">
+      <legend>Описание и теги</legend>
+      {% include "partials/field.html" with field=form.description %}
+      {% include "partials/markdown_help.html" %}
+      {% include "partials/field.html" with field=form.tags_input %}
+    </fieldset>
+
+    <p class="form__legal">
+      Загружая файл, вы подтверждаете, что имеете право его распространять, и соглашаетесь
+      с <a href="{% url 'core:about' %}#rules">правилами</a>.
+    </p>
+
+    <div class="form__actions">
+      <a class="btn btn--outline" href="{% if is_edit %}{{ material.get_absolute_url }}{% else %}{% url 'materials:search' %}{% endif %}">Отмена</a>
+      <button type="submit" class="btn btn--accent">{% if is_edit %}Сохранить{% else %}Загрузить{% endif %}</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

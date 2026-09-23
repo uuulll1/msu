@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Страница не найдена{% endblock %}
+{% block content %}
+<section class="error-page">
+  <div class="container">
+    <p class="error-page__code">404</p>
+    <h1 class="error-page__title">Страница не найдена</h1>
+    <p class="error-page__text">Возможно, материал удалён, ещё не прошёл модерацию или адрес введён с ошибкой.</p>
+    <div class="error-page__actions">
+      <a class="btn btn--primary" href="{% url 'core:home' %}">На главную</a>
+      <a class="btn btn--outline" href="{% url 'materials:search' %}">Искать материалы</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

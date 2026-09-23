@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% load markdown_tags portal_tags humanize %}
+{% block title %}{{ profile_user.username }}{% endblock %}
+
+{% block content %}
+<section class="page-hero page-hero--compact">
+  <div class="container profile-head">
+    <span class="avatar avatar--xl" aria-hidden="true">{{ profile_user|initials }}</span>
+    <div>
+      <h1 class="page-hero__title page-hero__title--md">{{ profile_user.display_name }}</h1>
+      <p class="page-hero__lead">
+        @{{ profile_user.username }}
+        {% if profile_user.specialty %} · {{ profile_user.specialty.name }}{% endif %}
+        {% if profile_user.study_year %} · {{ profile_user.study_year }} курс{% endif %}
+        · на сайте с {{ profile_user.date_joined|date:"F Y" }}
+      </p>
+      {% if is_owner %}
+        <div class="page-hero__actions">
+          <a class="btn btn--light btn--sm" href="{% url 'accounts:profile_edit' %}">Редактировать профиль</a>
+          <a class="btn btn--ghost-light btn--sm" href="{% url 'accounts:password_change' %}">Сменить пароль</a>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+<section class="stats-band stats-band--light">
+  <div class="container stats-band__grid stats-band__grid--3">
+    <div class="stat"><span class="stat__num">{{ stats.materials }}</span><span class="stat__label">{{ stats.materials|plural_ru:"материал,материала,материалов" }}</span></div>
+    <div class="stat"><span class="stat__num">{{ stats.downloads|intcomma }}</span><span class="stat__label">{{ stats.downloads|plural_ru:"скачивание,скачивания,скачиваний" }}</span></div>
+    <div class="stat"><span class="stat__num">{{ stats.posts }}</span><span class="stat__label">{{ stats.posts|plural_ru:"сообщение,сообщения,сообщений" }} на форуме</span></div>
+  </div>
+</section>
+
+<div class="container section split">
+  <div class="split__main">
+    <header class="section__head"><h2 class="section__title section__title--sm">{% if is_owner %}Мои загрузки{% else %}Загрузки{% endif %}</h2></header>
+    {% if is_owner %}
+      <div class="table-wrap">
+        <table class="table">
+          <thead><tr><th>Материал</th><th>Предмет</th><th>Статус</th><th>Скачиваний</th></tr></thead>
+          <tbody>
+            {% for material in page_obj %}
+              <tr>
+                <td><a href="{{ material.get_absolute_url }}">{{ material.title }}</a></td>
+                <td>{{ material.subject.name }}</td>
+                <td><span class="status status--{{ material.status }}">{{ material.get_status_display }}</span></td>
+                <td>{{ material.downloads_count }}</td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="4" class="empty">Вы ещё ничего не загрузили. <a href="{% url 'materials:upload' %}">Загрузить материал</a></td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <div class="cards-grid cards-grid--2">
+        {% for material in page_obj %}
+          {% include "partials/material_card.html" %}
+        {% empty %}
+          <p class="empty">Пользователь пока ничего не загрузил.</p>
+        {% endfor %}
+      </div>
+    {% endif %}
+    {% include "partials/pagination.html" %}
+  </div>
+
+  <aside class="split__side">
+    {% if profile_user.bio %}
+      <div class="side-box">
+        <h2 class="side-box__title">О себе</h2>
+        <div class="prose prose--sm">{{ profile_user.bio|markdown }}</div>
+      </div>
+    {% endif %}
+    <div class="side-box">
+      <h2 class="side-box__title">Темы на форуме</h2>
+      <ul class="plain-list">
+        {% for topic in topics %}
+          <li><a href="{{ topic.get_absolute_url }}">{{ topic.title }}</a> <span class="muted">· {{ topic.subject.name }}</span></li>
+        {% empty %}
+          <li class="empty">Тем пока нет.</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </aside>
+</div>
+{% endblock %}

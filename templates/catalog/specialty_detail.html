@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% load markdown_tags portal_tags %}
+{% block title %}{{ specialty.name }}{% endblock %}
+
+{% block content %}
+<section class="page-hero">
+  <div class="container">
+    <nav class="crumbs crumbs--light" aria-label="Навигация">
+      <a href="{% url 'core:home' %}">Главная</a>
+      <a href="{{ faculty.get_absolute_url }}">{{ faculty.short_name }}</a>
+      <span>{{ specialty.name }}</span>
+    </nav>
+    <p class="eyebrow eyebrow--light">{{ specialty.get_degree_display }}{% if specialty.code %} · {{ specialty.code }}{% endif %}</p>
+    <h1 class="page-hero__title">{{ specialty.name }}</h1>
+    {% if specialty.description %}<div class="page-hero__lead prose prose--light">{{ specialty.description|markdown }}</div>{% endif %}
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <header class="section__head"><p class="eyebrow">Шаг 2</p><h2 class="section__title">Выберите курс</h2></header>
+    <div class="course-grid">
+      {% for course in courses %}
+        <article class="course-card">
+          <a class="course-card__head" href="{{ course.get_absolute_url }}">
+            <span class="course-card__num">{{ course.number }}</span>
+            <span class="course-card__label">курс</span>
+          </a>
+          <ul class="course-card__sems">
+            {% for semester in course.semesters.all %}
+              <li>
+                <a href="{{ semester.get_absolute_url }}">{{ semester.number }} семестр</a>
+                <span class="muted">{{ semester.subjects_total }} {{ semester.subjects_total|plural_ru:"предмет,предмета,предметов" }}</span>
+              </li>
+            {% endfor %}
+          </ul>
+        </article>
+      {% empty %}
+        <p class="empty">Курсы ещё не заведены.</p>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+{% if latest %}
+<section class="section section--muted">
+  <div class="container">
+    <header class="section__head section__head--row">
+      <div><p class="eyebrow">Новое</p><h2 class="section__title">Свежие материалы специальности</h2></div>
+      <a class="link-arrow" href="{% url 'materials:search' %}?specialty={{ specialty.slug }}">Все →</a>
+    </header>
+    <div class="cards-grid">
+      {% for material in latest %}{% include "partials/material_card.html" %}{% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+{% endblock %}

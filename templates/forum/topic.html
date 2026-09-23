@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% load markdown_tags portal_tags humanize %}
+{% block title %}{{ topic.title }} — форум{% endblock %}
+
+{% block content %}
+<section class="page-hero page-hero--compact">
+  <div class="container">
+    <nav class="crumbs crumbs--light" aria-label="Навигация">
+      <a href="{% url 'core:home' %}">Главная</a>
+      <a href="{% url 'forum:index' %}">Форум</a>
+      <a href="{{ subject.get_forum_url }}">{{ subject.name }}</a>
+      <span>Тема</span>
+    </nav>
+    <h1 class="page-hero__title page-hero__title--md math-scope">
+      {% if topic.is_pinned %}<span class="pill pill--gold">Закреплено</span>{% endif %}
+      {% if topic.is_locked %}<span class="pill pill--light">Закрыто</span>{% endif %}
+      {{ topic.title }}
+    </h1>
+    <p class="page-hero__lead">
+      Автор: {{ topic.author.username|default:"удалённый пользователь" }} · {{ topic.created_at|date:"j E Y" }}
+      · {{ topic.views_count }} {{ topic.views_count|plural_ru:"просмотр,просмотра,просмотров" }}
+    </p>
+  </div>
+</section>
+
+<div class="container container--medium section">
+  <ol class="post-list">
+    {% for post in page_obj %}
+      <li class="post{% if post.pk == first_post_id %} post--first{% endif %}" id="post-{{ post.pk }}">
+        <aside class="post__author">
+          <span class="avatar avatar--lg" aria-hidden="true">{{ post.author|initials }}</span>
+          {% if post.author %}
+            <a class="post__username" href="{{ post.author.get_absolute_url }}">{{ post.author.username }}</a>
+            {% if post.author.is_moderator %}<span class="pill pill--navy">Модератор</span>{% endif %}
+            {% if post.author.specialty %}<span class="post__role">{{ post.author.specialty.display_short }}{% if post.author.study_year %}, {{ post.author.study_year }} курс{% endif %}</span>{% endif %}
+          {% else %}
+            <span class="post__username">удалённый пользователь</span>
+          {% endif %}
+        </aside>
+        <div class="post__content">
+          <header class="post__head">
+            <a class="post__anchor" href="#post-{{ post.pk }}">#{{ post.pk }}</a>
+            <time datetime="{{ post.created_at|date:'c' }}" title="{{ post.created_at|date:'j E Y, H:i' }}">{{ post.created_at|naturaltime }}</time>
+            {% if post.is_edited %}<span class="muted">· изменено</span>{% endif %}
+            {% if post.reply_to %}
+              <span class="muted">· в ответ на <a href="{{ post.reply_to.get_absolute_url }}">{{ post.reply_to.author.username|default:"сообщение" }}</a></span>
+            {% endif %}
+          </header>
+          <div class="prose">{{ post.body|markdown }}</div>
+          <footer class="post__actions">
+            {% if user.is_authenticated and not topic.is_locked %}
+              <a href="?quote={{ post.pk }}#reply">Цитировать</a>
+            {% endif %}
+            {% if post.author_id == user.pk or user.is_moderator %}
+              <a href="{% url 'forum:edit_post' post.pk %}">Редактировать</a>
+            {% endif %}
+          </footer>
+        </div>
+      </li>
+    {% endfor %}
+  </ol>
+
+  {% include "partials/pagination.html" %}
+
+  <section class="reply-box" id="reply">
+    {% if topic.is_locked and not user.is_moderator %}
+      <p class="notice">Тема закрыта для новых ответов.</p>
+    {% elif user.is_authenticated %}
+      <h2 class="content-block__title">Ваш ответ</h2>
+      {% if preview %}
+        <div class="preview">
+          <p class="preview__label">Предпросмотр</p>
+          <div class="prose">{{ preview|markdown }}</div>
+        </div>
+      {% endif %}
+      <form method="post" action="{{ topic.get_absolute_url }}#reply" class="form">
+        {% csrf_token %}
+        {% if reply_to_id %}<input type="hidden" name="reply_to" value="{{ reply_to_id }}">{% endif %}
+        {% include "partials/field.html" with field=form.body %}
+        <div class="form__actions">
+          {% include "partials/markdown_help.html" %}
+          <button type="submit" name="preview" value="1" class="btn btn--outline">Предпросмотр</button>
+          <button type="submit" class="btn btn--primary">Ответить</button>
+        </div>
+      </form>
+    {% else %}
+      <p class="login-hint"><a href="{% url 'accounts:login' %}?next={{ request.path|urlencode }}">Войдите</a> или <a href="{% url 'accounts:signup' %}">зарегистрируйтесь</a>, чтобы ответить.</p>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

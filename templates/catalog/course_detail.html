@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% load portal_tags %}
+{% block title %}{{ course.number }} курс — {{ specialty.name }}{% endblock %}
+
+{% block content %}
+<section class="page-hero page-hero--compact">
+  <div class="container">
+    <nav class="crumbs crumbs--light" aria-label="Навигация">
+      <a href="{% url 'core:home' %}">Главная</a>
+      <a href="{{ faculty.get_absolute_url }}">{{ faculty.short_name }}</a>
+      <a href="{{ specialty.get_absolute_url }}">{{ specialty.display_short }}</a>
+      <span>{{ course.number }} курс</span>
+    </nav>
+    <h1 class="page-hero__title">{{ course.number }} курс</h1>
+    <p class="page-hero__lead">{{ specialty.name }}</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <header class="section__head"><p class="eyebrow">Шаг 3</p><h2 class="section__title">Семестры и предметы</h2></header>
+    <div class="semester-columns">
+      {% for semester in semesters %}
+        <article class="semester-panel">
+          <header class="semester-panel__head">
+            <h3><a href="{{ semester.get_absolute_url }}">{{ semester.number }} семестр</a></h3>
+            <a class="link-arrow" href="{{ semester.get_absolute_url }}">Открыть →</a>
+          </header>
+          <ul class="subject-list">
+            {% for subject in semester.subjects.all %}
+              <li>
+                <a href="{{ subject.get_absolute_url }}?sem={{ semester.pk }}">{{ subject.name }}</a>
+                <span class="count-pill">{{ subject.materials_total }}</span>
+              </li>
+            {% empty %}
+              <li class="empty">Предметы пока не добавлены.</li>
+            {% endfor %}
+          </ul>
+        </article>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}

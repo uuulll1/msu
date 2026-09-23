@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Факультеты{% endblock %}
+
+{% block content %}
+<section class="page-hero">
+  <div class="container">
+    <nav class="crumbs crumbs--light" aria-label="Навигация"><a href="{% url 'core:home' %}">Главная</a><span>Факультеты</span></nav>
+    <h1 class="page-hero__title">Факультеты</h1>
+    <p class="page-hero__lead">Сейчас на портале представлен механико-математический факультет. Список будет расти.</p>
+  </div>
+</section>
+
+<div class="container section">
+  {% for faculty in faculties %}
+    <article class="faculty-block">
+      <header class="faculty-block__head">
+        <div>
+          <p class="eyebrow">{{ faculty.short_name }}</p>
+          <h2 class="section__title"><a href="{{ faculty.get_absolute_url }}">{{ faculty.name }}</a></h2>
+        </div>
+        <a class="link-arrow" href="{{ faculty.get_absolute_url }}">Все предметы →</a>
+      </header>
+      <div class="spec-grid">
+        {% for specialty in faculty.specialties.all %}
+          <a class="spec-card" href="{{ specialty.get_absolute_url }}">
+            <span class="spec-card__index" aria-hidden="true">{{ forloop.counter|stringformat:"02d" }}</span>
+            <h3 class="spec-card__title">{{ specialty.name }}</h3>
+            <span class="spec-card__meta">{{ specialty.get_degree_display }} · {{ specialty.duration_years }} лет обучения</span>
+            <span class="spec-card__arrow" aria-hidden="true">→</span>
+          </a>
+        {% endfor %}
+      </div>
+    </article>
+  {% empty %}
+    <p class="empty">Факультеты ещё не добавлены.</p>
+  {% endfor %}
+</div>
+{% endblock %}

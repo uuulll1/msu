@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Удаление материала{% endblock %}
+
+{% block content %}
+<div class="container container--narrow section">
+  <div class="form form--card">
+    <h1 class="section__title">Удалить материал?</h1>
+    <p>Материал «<strong>{{ material.title }}</strong>» и его файл будут удалены без возможности восстановления. Комментарии и оценки тоже исчезнут.</p>
+    <form method="post" class="form__actions">
+      {% csrf_token %}
+      <a class="btn btn--outline" href="{{ material.get_absolute_url }}">Отмена</a>
+      <button type="submit" class="btn btn--danger">Удалить</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

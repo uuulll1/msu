@@ -1,0 +1,9 @@
+{# Универсальный вывод поля формы: подпись, виджет, подсказка, ошибки #}
+<div class="field{% if field.errors %} field--error{% endif %}{% if field.field.widget.input_type == 'checkbox' %} field--checkbox{% endif %}">
+  <label for="{{ field.id_for_label }}" class="field__label">
+    {{ field.label }}{% if field.field.required %} <span class="field__req" aria-hidden="true">*</span>{% endif %}
+  </label>
+  {{ field }}
+  {% if field.help_text %}<p class="field__help">{{ field.help_text|safe }}</p>{% endif %}
+  {% for error in field.errors %}<p class="field__error">{{ error }}</p>{% endfor %}
+</div>

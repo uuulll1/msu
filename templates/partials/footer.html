@@ -1,0 +1,37 @@
+<footer class="site-footer">
+  <div class="container site-footer__grid">
+    <div class="site-footer__brand">
+      <a class="brand brand--footer" href="{% url 'core:home' %}">
+        {% include "partials/logo.html" %}
+        <span class="brand__text">
+          <span class="brand__name">{{ SITE_NAME }}</span>
+          <span class="brand__sub">{{ SITE_TAGLINE }}</span>
+        </span>
+      </a>
+      <p class="site-footer__note">
+        Проект создан студентами для студентов. {{ SITE_DISCLAIMER }} и не связан
+        с его администрацией. Материалы публикуются пользователями.
+      </p>
+    </div>
+    <nav class="site-footer__col" aria-label="Разделы">
+      <h2 class="site-footer__title">Разделы</h2>
+      <a href="{% url 'materials:search' %}">Все материалы</a>
+      <a href="{% url 'catalog:faculty_list' %}">Факультеты</a>
+      <a href="{% url 'forum:index' %}">Форум</a>
+      <a href="{% url 'materials:upload' %}">Загрузить материал</a>
+    </nav>
+    <nav class="site-footer__col" aria-label="О проекте">
+      <h2 class="site-footer__title">Проект</h2>
+      <a href="{% url 'core:about' %}">О проекте</a>
+      <a href="{% url 'core:about' %}#rules">Правила</a>
+      <a href="{% url 'core:about' %}#disclaimer">Дисклеймер</a>
+      <a href="{% url 'core:about' %}#copyright">Авторские права</a>
+    </nav>
+  </div>
+  <div class="site-footer__bottom">
+    <div class="container site-footer__bottom-inner">
+      <span>© {% now "Y" %} {{ SITE_NAME }}. Неофициальный проект.</span>
+      <a href="#main" class="to-top">Наверх ↑</a>
+    </div>
+  </div>
+</footer>

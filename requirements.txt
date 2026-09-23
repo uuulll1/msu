@@ -1,0 +1,17 @@
+# Веб-фреймворк
+Django>=5.2,<6.0
+# Markdown и безопасная очистка HTML (защита от XSS)
+Markdown>=3.7,<4.0
+nh3>=0.2.20,<0.4
+# Проверка изображений при загрузке
+Pillow>=11.0
+# Статика в продакшене без отдельного веб-сервера
+whitenoise>=6.8
+# WSGI-сервер для продакшена
+gunicorn>=23.0
+# Настройка БД через переменную окружения DATABASE_URL (SQLite / PostgreSQL)
+dj-database-url>=2.3
+# Драйвер PostgreSQL (нужен только при DATABASE_URL=postgres://...)
+psycopg[binary]>=3.2
+# Загрузка переменных окружения из файла .env
+python-dotenv>=1.0

@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+{% load portal_tags %}
+{% block title %}{% if active_filters.q %}Поиск: {{ active_filters.q }}{% else %}Материалы{% endif %}{% endblock %}
+
+{% block content %}
+<section class="page-hero page-hero--compact">
+  <div class="container">
+    <nav class="crumbs crumbs--light" aria-label="Навигация"><a href="{% url 'core:home' %}">Главная</a><span>Материалы</span></nav>
+    <h1 class="page-hero__title">Каталог материалов</h1>
+    <form class="hero__search hero__search--wide" method="get" role="search">
+      <label class="visually-hidden" for="q">Поиск</label>
+      <input id="q" type="search" name="q" value="{{ form.q.value|default:'' }}" placeholder="Название, предмет, преподаватель или тег">
+      {% if form.faculty.value %}<input type="hidden" name="faculty" value="{{ form.faculty.value }}">{% endif %}
+      {% if form.specialty.value %}<input type="hidden" name="specialty" value="{{ form.specialty.value }}">{% endif %}
+      {% if form.subject.value %}<input type="hidden" name="subject" value="{{ form.subject.value }}">{% endif %}
+      {% if form.type.value %}<input type="hidden" name="type" value="{{ form.type.value }}">{% endif %}
+      {% if form.semester.value %}<input type="hidden" name="semester" value="{{ form.semester.value }}">{% endif %}
+      {% if form.tag.value %}<input type="hidden" name="tag" value="{{ form.tag.value }}">{% endif %}
+      {% if form.sort.value %}<input type="hidden" name="sort" value="{{ form.sort.value }}">{% endif %}
+      <button class="btn btn--accent" type="submit">Найти</button>
+    </form>
+  </div>
+</section>
+
+<div class="container section search-layout">
+  <aside class="filters" aria-label="Фильтры">
+    <form method="get" class="filters__form">
+      <input type="hidden" name="q" value="{{ form.q.value|default:'' }}">
+      <h2 class="filters__title">Фильтры</h2>
+
+      <div class="field">
+        <label class="field__label" for="f-faculty">Факультет</label>
+        <select id="f-faculty" name="faculty">
+          <option value="">Все факультеты</option>
+          {% for f in faculties %}<option value="{{ f.slug }}" {% if form.faculty.value == f.slug %}selected{% endif %}>{{ f.short_name }}</option>{% endfor %}
+        </select>
+      </div>
+
+      <div class="field">
+        <label class="field__label" for="f-specialty">Специальность</label>
+        <select id="f-specialty" name="specialty">
+          <option value="">Все специальности</option>
+          {% for s in specialties %}<option value="{{ s.slug }}" {% if form.specialty.value == s.slug %}selected{% endif %}>{{ s.name }}</option>{% endfor %}
+        </select>
+      </div>
+
+      <div class="field">
+        <label class="field__label" for="f-subject">Предмет</label>
+        <select id="f-subject" name="subject">
+          <option value="">Все предметы</option>
+          {% for s in subjects %}<option value="{{ s.slug }}" {% if form.subject.value == s.slug %}selected{% endif %}>{{ s.name }}</option>{% endfor %}
+        </select>
+      </div>
+
+      <div class="field">
+        <label class="field__label" for="{{ form.type.id_for_label }}">Тип</label>
+        {{ form.type }}
+      </div>
+
+      <div class="field">
+        <label class="field__label" for="{{ form.semester.id_for_label }}">Семестр</label>
+        {{ form.semester }}
+      </div>
+
+      <div class="field">
+        <label class="field__label" for="{{ form.sort.id_for_label }}">Сортировка</label>
+        {{ form.sort }}
+      </div>
+
+      {% if form.tag.value %}<input type="hidden" name="tag" value="{{ form.tag.value }}">{% endif %}
+
+      <div class="filters__actions">
+        <button class="btn btn--primary btn--block" type="submit">Применить</button>
+        <a class="btn btn--outline btn--block" href="{% url 'materials:search' %}">Сбросить</a>
+      </div>
+    </form>
+
+    {% if popular_tags %}
+      <div class="filters__tags">
+        <h2 class="filters__title">Теги</h2>
+        <div class="tag-cloud">
+          {% for tag in popular_tags %}
+            <a class="tag{% if form.tag.value == tag.slug %} is-active{% endif %}" href="?{% query_transform tag=tag.slug page='' %}">#{{ tag.name }}</a>
+          {% endfor %}
+        </div>
+      </div>
+    {% endif %}
+  </aside>
+
+  <div class="search-results">
+    <div class="search-results__head">
+      <p class="search-results__count">
+        Найдено: <strong>{{ total }}</strong> {{ total|plural_ru:"материал,материала,материалов" }}
+      </p>
+      <div class="active-filters">
+        {% if active_filters.q %}<a class="chip" href="?{% query_transform q='' page='' %}">«{{ active_filters.q }}» ×</a>{% endif %}
+        {% if active_filters.faculty %}<a class="chip" href="?{% query_transform faculty='' page='' %}">{{ active_filters.faculty.short_name }} ×</a>{% endif %}
+        {% if active_filters.specialty %}<a class="chip" href="?{% query_transform specialty='' page='' %}">{{ active_filters.specialty.name }} ×</a>{% endif %}
+        {% if active_filters.subject %}<a class="chip" href="?{% query_transform subject='' page='' %}">{{ active_filters.subject.name }} ×</a>{% endif %}
+        {% if active_filters.tag %}<a class="chip" href="?{% query_transform tag='' page='' %}">#{{ active_filters.tag.name }} ×</a>{% endif %}
+      </div>
+    </div>
+
+    <div class="cards-grid cards-grid--2">
+      {% for material in page_obj %}
+        {% include "partials/material_card.html" %}
+      {% empty %}
+        <div class="empty empty--box">
+          <p>Ничего не найдено. Попробуйте изменить запрос или сбросить фильтры.</p>
+        </div>
+      {% endfor %}
+    </div>
+    {% include "partials/pagination.html" %}
+  </div>
+</div>
+{% endblock %}

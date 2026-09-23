@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+{% load portal_tags humanize %}
+{% block title %}Конспекты, задачи и обсуждения{% endblock %}
+{% block body_class %}page-home{% endblock %}
+
+{% block content %}
+<section class="hero" aria-labelledby="hero-title">
+  <div class="hero__bg" aria-hidden="true">
+    {# Абстрактный фон: координатная сетка и графики функций #}
+    <svg class="hero__pattern" viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice">
+      <defs>
+        <pattern id="hero-grid" width="48" height="48" patternUnits="userSpaceOnUse">
+          <path d="M48 0H0V48" fill="none" stroke="currentColor" stroke-width=".6" opacity=".35"/>
+        </pattern>
+      </defs>
+      <rect width="1200" height="800" fill="url(#hero-grid)"/>
+      <path d="M0 520 C 200 380, 320 660, 520 470 S 860 250, 1200 360" fill="none" stroke="var(--c-gold)" stroke-width="2" opacity=".75"/>
+      <path d="M0 600 C 260 560, 380 300, 640 330 S 980 560, 1200 470" fill="none" stroke="#ffffff" stroke-width="1.2" opacity=".35"/>
+      <circle cx="930" cy="250" r="170" fill="none" stroke="#ffffff" stroke-width="1" opacity=".18"/>
+      <circle cx="930" cy="250" r="110" fill="none" stroke="var(--c-gold)" stroke-width="1" opacity=".35"/>
+      <path d="M760 250H1100M930 80V420" stroke="#ffffff" stroke-width=".8" opacity=".25"/>
+    </svg>
+  </div>
+
+  <div class="container hero__inner">
+    <p class="eyebrow eyebrow--light">Механико-математический факультет · неофициально</p>
+    <h1 class="hero__title" id="hero-title">Знания, которыми<br>делятся студенты</h1>
+    <p class="hero__lead">
+      Конспекты лекций, разборы семинаров, билеты и задачи — собраны по курсам, семестрам
+      и предметам. С формулами, обсуждениями и поиском.
+    </p>
+    <form class="hero__search" action="{% url 'materials:search' %}" method="get" role="search">
+      <label class="visually-hidden" for="hero-q">Поиск материалов</label>
+      <input id="hero-q" type="search" name="q" placeholder="Например: матанализ, ряды, коллоквиум" autocomplete="off">
+      <button class="btn btn--accent" type="submit">Найти</button>
+    </form>
+    <div class="hero__actions">
+      <a class="btn btn--light" href="#specialties">Выбрать специальность</a>
+      <a class="btn btn--ghost-light" href="{% url 'materials:upload' %}">Поделиться конспектом</a>
+    </div>
+  </div>
+
+  <a class="hero__scroll" href="#stats" aria-label="Прокрутить вниз"><span></span></a>
+</section>
+
+<section class="stats-band" id="stats" aria-label="Статистика">
+  <div class="container stats-band__grid">
+    <div class="stat"><span class="stat__num">{{ stats.materials|intcomma }}</span><span class="stat__label">{{ stats.materials|plural_ru:"материал,материала,материалов" }}</span></div>
+    <div class="stat"><span class="stat__num">{{ stats.subjects|intcomma }}</span><span class="stat__label">{{ stats.subjects|plural_ru:"предмет,предмета,предметов" }}</span></div>
+    <div class="stat"><span class="stat__num">{{ stats.topics|intcomma }}</span><span class="stat__label">{{ stats.topics|plural_ru:"тема,темы,тем" }} на форуме</span></div>
+    <div class="stat"><span class="stat__num">{{ stats.posts|intcomma }}</span><span class="stat__label">{{ stats.posts|plural_ru:"сообщение,сообщения,сообщений" }}</span></div>
+  </div>
+</section>
+
+<section class="section" id="specialties" aria-labelledby="spec-title">
+  <div class="container">
+    <header class="section__head">
+      <p class="eyebrow">Разделы</p>
+      <h2 class="section__title" id="spec-title">Специальности</h2>
+      <p class="section__lead">Выберите специальность, затем курс и семестр — и найдите материалы по нужному предмету.</p>
+    </header>
+    <div class="spec-grid">
+      {% for specialty in specialties %}
+        <a class="spec-card" href="{{ specialty.get_absolute_url }}">
+          <span class="spec-card__index" aria-hidden="true">{{ forloop.counter|stringformat:"02d" }}</span>
+          <span class="spec-card__faculty">{{ specialty.faculty.short_name }}</span>
+          <h3 class="spec-card__title">{{ specialty.name }}</h3>
+          <p class="spec-card__text">{{ specialty.description|striptags|truncatewords:22 }}</p>
+          <span class="spec-card__meta">
+            {{ specialty.get_degree_display }} · {{ specialty.materials_total }} {{ specialty.materials_total|plural_ru:"материал,материала,материалов" }}
+          </span>
+          <span class="spec-card__arrow" aria-hidden="true">→</span>
+        </a>
+      {% empty %}
+        <p class="empty">Специальности ещё не добавлены. Запустите <code>python manage.py seed_portal</code>.</p>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section class="section section--muted" aria-labelledby="latest-title">
+  <div class="container">
+    <header class="section__head section__head--row">
+      <div>
+        <p class="eyebrow">Новое</p>
+        <h2 class="section__title" id="latest-title">Последние материалы</h2>
+      </div>
+      <a class="link-arrow" href="{% url 'materials:search' %}?sort=new">Все материалы →</a>
+    </header>
+    <div class="cards-grid">
+      {% for material in latest %}
+        {% include "partials/material_card.html" %}
+      {% empty %}
+        <p class="empty">Пока нет опубликованных материалов. <a href="{% url 'materials:upload' %}">Загрузите первый!</a></p>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section class="section" aria-labelledby="popular-title">
+  <div class="container split">
+    <div class="split__main">
+      <header class="section__head section__head--row">
+        <div>
+          <p class="eyebrow">Выбор студентов</p>
+          <h2 class="section__title" id="popular-title">Популярное</h2>
+        </div>
+        <a class="link-arrow" href="{% url 'materials:search' %}?sort=popular">Смотреть всё →</a>
+      </header>
+      <ol class="rank-list">
+        {% for material in popular %}
+          <li class="rank-list__item">
+            <span class="rank-list__num">{{ forloop.counter }}</span>
+            <div class="rank-list__body">
+              <a class="rank-list__title" href="{{ material.get_absolute_url }}">{{ material.title }}</a>
+              <span class="rank-list__meta">{{ material.subject.name }} · {{ material.get_material_type_display }}</span>
+            </div>
+            <span class="rank-list__count" title="Скачиваний">{{ material.downloads_count|intcomma }} ↓</span>
+          </li>
+        {% empty %}
+          <li class="empty">Здесь появятся самые скачиваемые материалы.</li>
+        {% endfor %}
+      </ol>
+    </div>
+
+    <aside class="split__side" aria-labelledby="forum-title">
+      <header class="section__head section__head--row">
+        <div>
+          <p class="eyebrow">Форум</p>
+          <h2 class="section__title section__title--sm" id="forum-title">Активные обсуждения</h2>
+        </div>
+      </header>
+      <ul class="topic-list topic-list--compact">
+        {% for topic in active_topics %}
+          {% include "partials/topic_row.html" with show_subject=True compact=True %}
+        {% empty %}
+          <li class="empty">Обсуждений пока нет.</li>
+        {% endfor %}
+      </ul>
+      <a class="btn btn--outline btn--block" href="{% url 'forum:index' %}">Перейти на форум</a>
+    </aside>
+  </div>
+</section>
+
+<section class="cta" aria-labelledby="cta-title">
+  <div class="container cta__inner">
+    <div>
+      <h2 class="cta__title" id="cta-title">Есть хороший конспект?</h2>
+      <p class="cta__text">Поделитесь им с однокурсниками. После быстрой проверки модератором он появится в каталоге.</p>
+    </div>
+    <a class="btn btn--accent btn--lg" href="{% url 'materials:upload' %}">Загрузить материал</a>
+  </div>
+</section>
+{% endblock %}

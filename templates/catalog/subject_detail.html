@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% load markdown_tags portal_tags %}
+{% block title %}{{ subject.name }}{% endblock %}
+
+{% block content %}
+<section class="page-hero page-hero--compact">
+  <div class="container">
+    <nav class="crumbs crumbs--light" aria-label="Навигация">
+      <a href="{% url 'core:home' %}">Главная</a>
+      <a href="{{ faculty.get_absolute_url }}">{{ faculty.short_name }}</a>
+      {% if semester_ctx %}
+        {% with sp=semester_ctx.course.specialty %}
+          <a href="{{ sp.get_absolute_url }}">{{ sp.display_short }}</a>
+          <a href="{{ semester_ctx.course.get_absolute_url }}">{{ semester_ctx.course.number }} курс</a>
+          <a href="{{ semester_ctx.get_absolute_url }}">{{ semester_ctx.number }} семестр</a>
+        {% endwith %}
+      {% endif %}
+      <span>{{ subject.name }}</span>
+    </nav>
+    <h1 class="page-hero__title">{{ subject.name }}</h1>
+    {% if subject.description %}<div class="page-hero__lead prose prose--light">{{ subject.description|markdown }}</div>{% endif %}
+    <div class="page-hero__actions">
+      <a class="btn btn--accent" href="{% url 'materials:upload' %}?subject={{ subject.pk }}{% if semester_ctx %}&semester={{ semester_ctx.pk }}{% endif %}">Загрузить материал</a>
+      <a class="btn btn--ghost-light" href="{{ subject.get_forum_url }}">Обсуждения предмета</a>
+    </div>
+  </div>
+</section>
+
+<div class="container section split">
+  <div class="split__main">
+    <header class="section__head section__head--row">
+      <div><p class="eyebrow">Шаг 5</p><h2 class="section__title">Материалы</h2></div>
+      <form method="get" class="inline-form">
+        {% if semester_ctx %}<input type="hidden" name="sem" value="{{ semester_ctx.pk }}">{% endif %}
+        {% if active_type %}<input type="hidden" name="type" value="{{ active_type }}">{% endif %}
+        <label class="visually-hidden" for="sort">Сортировка</label>
+        <select id="sort" name="sort">
+          <option value="new" {% if sort == "new" %}selected{% endif %}>Сначала новые</option>
+          <option value="popular" {% if sort == "popular" %}selected{% endif %}>По скачиваниям</option>
+          <option value="likes" {% if sort == "likes" %}selected{% endif %}>По оценкам</option>
+        </select>
+        <button class="btn btn--outline btn--sm" type="submit">Применить</button>
+      </form>
+    </header>
+
+    <nav class="tabs" aria-label="Тип материала">
+      <a class="tabs__item{% if not active_type %} is-active{% endif %}" href="?{% query_transform type='' page='' %}">Все <span>{{ total_count }}</span></a>
+      {% for value, label, count in type_tabs %}
+        {% if count %}
+          <a class="tabs__item{% if active_type == value %} is-active{% endif %}" href="?{% query_transform type=value page='' %}">{{ label }} <span>{{ count }}</span></a>
+        {% endif %}
+      {% endfor %}
+    </nav>
+
+    {% if semester_ctx %}
+      <p class="filter-note">
+        {% if request.GET.only == "sem" %}
+          Показаны материалы только за {{ semester_ctx.number }} семестр.
+          <a href="?{% query_transform only='' page='' %}">Показать все</a>
+        {% else %}
+          <a href="?{% query_transform only='sem' page='' %}">Показать только {{ semester_ctx.number }} семестр</a>
+        {% endif %}
+      </p>
+    {% endif %}
+
+    <div class="cards-grid cards-grid--2">
+      {% for material in page_obj %}
+        {% include "partials/material_card.html" %}
+      {% empty %}
+        <div class="empty empty--box">
+          <p>По этому предмету пока нет материалов{% if active_type %} такого типа{% endif %}.</p>
+          <a class="btn btn--accent btn--sm" href="{% url 'materials:upload' %}?subject={{ subject.pk }}">Загрузить первым</a>
+        </div>
+      {% endfor %}
+    </div>
+    {% include "partials/pagination.html" %}
+  </div>
+
+  <aside class="split__side">
+    <div class="side-box">
+      <h2 class="side-box__title">Обсуждения</h2>
+      <ul class="topic-list topic-list--compact">
+        {% for topic in topics %}
+          {% include "partials/topic_row.html" with compact=True %}
+        {% empty %}
+          <li class="empty">Тем пока нет.</li>
+        {% endfor %}
+      </ul>
+      <div class="side-box__actions">
+        <a class="btn btn--outline btn--sm" href="{{ subject.get_forum_url }}">Все темы</a>
+        <a class="btn btn--primary btn--sm" href="{% url 'forum:new_topic' faculty=faculty.slug subject=subject.slug %}">Новая тема</a>
+      </div>
+    </div>
+
+    {% if taught_in %}
+    <div class="side-box">
+      <h2 class="side-box__title">Где читается</h2>
+      <ul class="plain-list">
+        {% for sem in taught_in %}
+          <li><a href="{{ sem.get_absolute_url }}">{{ sem.course.specialty.display_short }} — {{ sem.number }} семестр</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+  </aside>
+</div>
+{% endblock %}

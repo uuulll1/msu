@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Регистрация{% endblock %}
+
+{% block content %}
+<div class="auth">
+  <div class="auth__card auth__card--wide">
+    <h1 class="auth__title">Регистрация</h1>
+    <p class="auth__lead">Уже есть аккаунт? <a href="{% url 'accounts:login' %}">Войдите</a></p>
+    <form method="post" class="form" novalidate>
+      {% csrf_token %}
+      {% include "partials/form_errors.html" %}
+      {% include "partials/field.html" with field=form.username %}
+      {% include "partials/field.html" with field=form.email %}
+      <div class="form__row">
+        {% include "partials/field.html" with field=form.specialty %}
+        {% include "partials/field.html" with field=form.study_year %}
+      </div>
+      {% include "partials/field.html" with field=form.password1 %}
+      {% include "partials/field.html" with field=form.password2 %}
+      <p class="form__legal">Регистрируясь, вы соглашаетесь с <a href="{% url 'core:about' %}#rules">правилами</a> и понимаете, что это неофициальный ресурс.</p>
+      <button type="submit" class="btn btn--accent btn--block btn--lg">Создать аккаунт</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

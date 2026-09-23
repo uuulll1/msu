@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Форум: {{ subject.name }}{% endblock %}
+
+{% block content %}
+<section class="page-hero page-hero--compact">
+  <div class="container">
+    <nav class="crumbs crumbs--light" aria-label="Навигация">
+      <a href="{% url 'core:home' %}">Главная</a><a href="{% url 'forum:index' %}">Форум</a><span>{{ subject.name }}</span>
+    </nav>
+    <h1 class="page-hero__title">{{ subject.name }}</h1>
+    <div class="page-hero__actions">
+      <a class="btn btn--accent" href="{% url 'forum:new_topic' faculty=subject.faculty.slug subject=subject.slug %}">Создать тему</a>
+      <a class="btn btn--ghost-light" href="{{ subject.get_absolute_url }}">Материалы предмета</a>
+    </div>
+  </div>
+</section>
+
+<div class="container section">
+  <ul class="topic-list">
+    {% for topic in page_obj %}
+      {% include "partials/topic_row.html" %}
+    {% empty %}
+      <li class="empty empty--box">
+        <p>В этой ветке ещё нет тем.</p>
+        <a class="btn btn--primary btn--sm" href="{% url 'forum:new_topic' faculty=subject.faculty.slug subject=subject.slug %}">Начать обсуждение</a>
+      </li>
+    {% endfor %}
+  </ul>
+  {% include "partials/pagination.html" %}
+</div>
+{% endblock %}

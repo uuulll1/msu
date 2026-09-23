@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+{% load markdown_tags portal_tags humanize %}
+{% block title %}{{ material.title }}{% endblock %}
+{% block meta_description %}{{ material.get_material_type_display }} по предмету «{{ material.subject.name }}»{% if material.teacher %}, преподаватель {{ material.teacher }}{% endif %}.{% endblock %}
+
+{% block content %}
+<section class="page-hero page-hero--compact">
+  <div class="container">
+    <nav class="crumbs crumbs--light" aria-label="Навигация">
+      <a href="{% url 'core:home' %}">Главная</a>
+      <a href="{{ material.subject.faculty.get_absolute_url }}">{{ material.subject.faculty.short_name }}</a>
+      <a href="{{ material.subject.get_absolute_url }}">{{ material.subject.name }}</a>
+      <span>Материал</span>
+    </nav>
+    <p class="eyebrow eyebrow--light">{{ material.get_material_type_display }}</p>
+    <h1 class="page-hero__title page-hero__title--md">{{ material.title }}</h1>
+  </div>
+</section>
+
+<div class="container section material-layout">
+  <div class="material-main">
+    {% if not material.is_approved %}
+      <div class="notice {% if material.status == 'rejected' %}notice--red{% else %}notice--gold{% endif %}">
+        <h2 class="notice__title">{{ material.get_status_display }}</h2>
+        {% if material.is_pending %}
+          <p>Материал ожидает проверки модератором и пока виден только вам{% if user.is_moderator %} и модераторам{% endif %}.</p>
+        {% else %}
+          <p>Материал отклонён модератором и не показывается другим пользователям.</p>
+        {% endif %}
+        {% if material.moderation_note %}<p><strong>Комментарий модератора:</strong> {{ material.moderation_note }}</p>{% endif %}
+        {% if user.is_moderator %}<p><a href="{% url 'admin:materials_material_change' material.pk %}">Открыть в админ-панели →</a></p>{% endif %}
+      </div>
+    {% endif %}
+
+    {# Встроенный просмотр файла #}
+    <section class="viewer" aria-label="Просмотр файла">
+      {% if material.is_pdf %}
+        <div class="viewer__frame">
+          <iframe src="{{ material.get_view_url }}#view=FitH" title="Просмотр PDF: {{ material.title }}" loading="lazy"></iframe>
+        </div>
+        <p class="viewer__hint">Если документ не отображается, <a href="{{ material.get_view_url }}" target="_blank" rel="noopener">откройте его в новой вкладке</a> или скачайте.</p>
+      {% elif material.is_image %}
+        <figure class="viewer__image">
+          <img src="{{ material.get_view_url }}" alt="{{ material.title }}" loading="lazy">
+        </figure>
+      {% elif material.is_text %}
+        {% if material.extension == ".md" %}
+          <div class="viewer__text prose">{{ text_preview|markdown }}</div>
+        {% else %}
+          <pre class="viewer__code"><code>{{ text_preview }}</code></pre>
+        {% endif %}
+      {% else %}
+        <p class="empty empty--box">Предпросмотр для этого формата недоступен — скачайте файл.</p>
+      {% endif %}
+    </section>
+
+    {% if material.description %}
+      <section class="content-block">
+        <h2 class="content-block__title">Описание</h2>
+        <div class="prose">{{ material.description|markdown }}</div>
+      </section>
+    {% endif %}
+
+    <section class="content-block" id="comments">
+      <h2 class="content-block__title">Комментарии <span class="muted">{{ comments|length }}</span></h2>
+      <ol class="comment-list">
+        {% for comment in comments %}
+          <li class="comment" id="comment-{{ comment.pk }}">
+            <span class="avatar" aria-hidden="true">{{ comment.author|initials }}</span>
+            <div class="comment__body">
+              <p class="comment__meta">
+                <a href="{{ comment.author.get_absolute_url }}">{{ comment.author.username }}</a>
+                <time datetime="{{ comment.created_at|date:'c' }}">{{ comment.created_at|naturaltime }}</time>
+              </p>
+              <div class="prose prose--sm">{{ comment.body|markdown }}</div>
+            </div>
+          </li>
+        {% empty %}
+          <li class="empty">Комментариев пока нет.</li>
+        {% endfor %}
+      </ol>
+
+      {% if material.is_approved %}
+        {% if user.is_authenticated %}
+          <form method="post" action="{% url 'materials:comment' material.pk %}" class="form comment-form">
+            {% csrf_token %}
+            {% include "partials/field.html" with field=comment_form.body %}
+            <div class="form__actions">
+              {% include "partials/markdown_help.html" %}
+              <button type="submit" class="btn btn--primary">Отправить</button>
+            </div>
+          </form>
+        {% else %}
+          <p class="login-hint"><a href="{% url 'accounts:login' %}?next={{ request.path|urlencode }}">Войдите</a>, чтобы оставить комментарий.</p>
+        {% endif %}
+      {% endif %}
+    </section>
+  </div>
+
+  <aside class="material-side">
+    <div class="side-box side-box--sticky">
+      <a class="btn btn--accent btn--block btn--lg" href="{{ material.get_download_url }}">
+        <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12M6 11l6 6 6-6M4 21h16"/></svg>
+        Скачать {{ material.extension|slice:"1:"|upper }} · {{ material.file_size|filesize }}
+      </a>
+
+      <div class="rating" id="rating">
+        {% if user.is_authenticated and material.is_approved %}
+          <form method="post" action="{% url 'materials:like' material.pk %}">
+            {% csrf_token %}
+            <button type="submit" class="like-btn{% if user_liked %} is-active{% endif %}" aria-pressed="{% if user_liked %}true{% else %}false{% endif %}">
+              <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="{% if user_liked %}currentColor{% else %}none{% endif %}" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21.2l8.8-8.8a5.5 5.5 0 0 0 0-7.8z"/></svg>
+              {% if user_liked %}Нравится{% else %}Полезно{% endif %}
+              <span class="like-btn__count">{{ likes_total }}</span>
+            </button>
+          </form>
+        {% else %}
+          <span class="like-btn is-static">♥ <span class="like-btn__count">{{ likes_total }}</span></span>
+        {% endif %}
+        <span class="muted">{{ material.downloads_count|intcomma }} {{ material.downloads_count|plural_ru:"скачивание,скачивания,скачиваний" }}</span>
+      </div>
+
+      <dl class="meta-list">
+        <div><dt>Предмет</dt><dd><a href="{{ material.subject.get_absolute_url }}">{{ material.subject.name }}</a></dd></div>
+        <div><dt>Тип</dt><dd><a href="{% url 'materials:search' %}?type={{ material.material_type }}">{{ material.get_material_type_display }}</a></dd></div>
+        {% if material.teacher %}<div><dt>Преподаватель</dt><dd><a href="{% url 'materials:search' %}?q={{ material.teacher|urlencode }}">{{ material.teacher }}</a></dd></div>{% endif %}
+        {% if material.semester %}<div><dt>Семестр</dt><dd><a href="{{ material.semester.get_absolute_url }}">{{ material.semester.number }} ({{ material.semester.course.specialty.display_short }})</a></dd></div>{% endif %}
+        {% if material.academic_year %}<div><dt>Учебный год</dt><dd>{{ material.academic_year }}</dd></div>{% endif %}
+        <div><dt>Загрузил</dt><dd>{% if material.author %}<a href="{{ material.author.get_absolute_url }}">{{ material.author.username }}</a>{% else %}—{% endif %}</dd></div>
+        <div><dt>Дата</dt><dd><time datetime="{{ material.created_at|date:'c' }}">{{ material.created_at|date:"j E Y" }}</time></dd></div>
+        <div><dt>Файл</dt><dd class="break">{{ material.download_filename }}</dd></div>
+      </dl>
+
+      {% if material.tags.all %}
+        <div class="tag-cloud">
+          {% for tag in material.tags.all %}<a class="tag" href="{{ tag.get_absolute_url }}">#{{ tag.name }}</a>{% endfor %}
+        </div>
+      {% endif %}
+
+      {% if can_edit %}
+        <div class="side-box__actions">
+          <a class="btn btn--outline btn--sm" href="{% url 'materials:edit' material.pk %}">Редактировать</a>
+          <a class="btn btn--danger-outline btn--sm" href="{% url 'materials:delete' material.pk %}">Удалить</a>
+        </div>
+      {% endif %}
+    </div>
+
+    {% if related %}
+      <div class="side-box">
+        <h2 class="side-box__title">Ещё по предмету</h2>
+        <ul class="plain-list">
+          {% for item in related %}
+            <li><a href="{{ item.get_absolute_url }}">{{ item.title }}</a> <span class="muted">· {{ item.get_material_type_display|lower }}</span></li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% endif %}
+  </aside>
+</div>
+{% endblock %}

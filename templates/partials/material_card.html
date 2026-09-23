@@ -1,0 +1,28 @@
+{% load portal_tags %}
+<article class="material-card{% if compact %} material-card--compact{% endif %}">
+  <div class="material-card__top">
+    <span class="badge badge--{{ material.material_type }}">{{ material.get_material_type_display }}</span>
+    <span class="file-chip" title="Формат файла">{{ material.extension|slice:"1:"|upper }}</span>
+  </div>
+  <h3 class="material-card__title">
+    <a href="{{ material.get_absolute_url }}" class="stretched-link">{{ material.title }}</a>
+  </h3>
+  <p class="material-card__subject">{{ material.subject.name }}</p>
+  <dl class="material-card__meta">
+    {% if material.teacher %}<div><dt>Преподаватель</dt><dd>{{ material.teacher }}</dd></div>{% endif %}
+    {% if material.semester %}<div><dt>Семестр</dt><dd>{{ material.semester.number }}</dd></div>{% endif %}
+  </dl>
+  <div class="material-card__footer">
+    <span title="Скачиваний">
+      <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+      {{ material.downloads_count }}
+    </span>
+    {% if material.likes_total is not None %}
+    <span title="Оценок">
+      <svg aria-hidden="true" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21.2l8.8-8.8a5.5 5.5 0 0 0 0-7.8z"/></svg>
+      {{ material.likes_total }}
+    </span>
+    {% endif %}
+    <time datetime="{{ material.created_at|date:'c' }}">{{ material.created_at|date:"j E Y" }}</time>
+  </div>
+</article>
