@@ -68,37 +68,36 @@
     }
   ];
 
+  var box = canvas.parentElement;
+
   function resize() {
-    var rect = canvas.getBoundingClientRect();
+    // Размер берём у родителя (он растянут на весь главный экран) и задаём canvas явно
+    // в пикселях — так одинаково ведут себя Safari, Chrome и Firefox
+    var w = Math.round(box.clientWidth);
+    var h = Math.round(box.clientHeight);
+    if (w < 2 || h < 2) return;
     dpr = Math.min(window.devicePixelRatio || 1, 2);
-    width = Math.max(1, Math.round(rect.width));
-    height = Math.max(1, Math.round(rect.height));
-    canvas.width = Math.round(width * dpr);
-    canvas.height = Math.round(height * dpr);
+    if (w === width && h === height && canvas.width === Math.round(w * dpr)) return;
+    width = w;
+    height = h;
+    canvas.style.width = w + "px";
+    canvas.style.height = h + "px";
+    canvas.width = Math.round(w * dpr);
+    canvas.height = Math.round(h * dpr);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    if (!running) draw(elapsed());
+    if (!running) safeDraw(elapsed());
+  }
+
+  function safeDraw(t) {
+    try {
+      draw(t);
+    } catch (e) {
+      /* ошибка рисования не должна ломать страницу */
+    }
   }
 
   function elapsed() {
     return (performance.now() - startTime) / 1000;
-  }
-
-  function drawGrid(t) {
-    var step = 48;
-    // Сетка медленно «едет» влево вместе с графиками
-    var offset = (t * 12) % step;
-    ctx.lineWidth = 1;
-    ctx.strokeStyle = "rgba(" + WHITE + ", 0.05)";
-    ctx.beginPath();
-    for (var x = -offset; x < width; x += step) {
-      ctx.moveTo(Math.round(x) + 0.5, 0);
-      ctx.lineTo(Math.round(x) + 0.5, height);
-    }
-    for (var y = 0; y < height; y += step) {
-      ctx.moveTo(0, Math.round(y) + 0.5);
-      ctx.lineTo(width, Math.round(y) + 0.5);
-    }
-    ctx.stroke();
   }
 
   function drawCurve(curve, t) {
@@ -172,14 +171,13 @@
 
   function draw(t) {
     ctx.clearRect(0, 0, width, height);
-    drawGrid(t);
     drawLissajous(t);
     for (var i = 0; i < curves.length; i++) drawCurve(curves[i], t);
   }
 
   function frame() {
     if (!running) return;
-    draw(elapsed());
+    safeDraw(elapsed());
     rafId = window.requestAnimationFrame(frame);
   }
 
@@ -197,13 +195,15 @@
 
   resize();
   canvas.classList.add("is-ready");
+  // Страховка: если при первом замере блок ещё не имел размера
+  window.addEventListener("load", resize);
   window.addEventListener("resize", resize);
   // Высота главного экрана меняется и без resize окна (подгрузка шрифтов, перенос строк
   // заголовка), поэтому следим за размером самого canvas
   if ("ResizeObserver" in window) {
     new ResizeObserver(function () {
       resize();
-    }).observe(canvas);
+    }).observe(box);
   }
 
   document.addEventListener("visibilitychange", function () {
@@ -222,7 +222,7 @@
   // Когда шрифты загрузятся, перерисуем подписи правильным начертанием
   if (document.fonts && document.fonts.ready) {
     document.fonts.ready.then(function () {
-      if (!running) draw(elapsed());
+      if (!running) safeDraw(elapsed());
     });
   }
 
