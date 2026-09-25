@@ -190,3 +190,6 @@ SITE_DISCLAIMER = "Неофициальный студенческий ресу�
 
 # Позволяет временно отключить CSP при отладке фронтенда
 DEBUG_CSP_DISABLED = env_bool("DJANGO_DISABLE_CSP", default=False)
+
+# В продакшене имена статики и так содержат хеш (ManifestStaticFilesStorage)
+STATIC_VERSION_PROD = os.environ.get("STATIC_VERSION", "1")

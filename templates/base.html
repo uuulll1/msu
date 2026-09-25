@@ -9,19 +9,19 @@
   <link rel="icon" href="{% static 'img/favicon.svg' %}" type="image/svg+xml">
 
   {# Тема применяется до отрисовки страницы, чтобы не было «вспышки» светлой темы #}
-  <script src="{% static 'js/theme-init.js' %}"></script>
+  <script src="{% static 'js/theme-init.js' %}?v={{ STATIC_VERSION }}"></script>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Oranienbaum&display=swap">
   <link rel="stylesheet" href="{% static 'vendor/katex/katex.min.css' %}">
-  <link rel="stylesheet" href="{% static 'css/main.css' %}">
+  <link rel="stylesheet" href="{% static 'css/main.css' %}?v={{ STATIC_VERSION }}">
   {% block extra_head %}{% endblock %}
 
   {# KaTeX хранится локально (static/vendor/katex) — не зависим от CDN #}
   <script defer src="{% static 'vendor/katex/katex.min.js' %}"></script>
   <script defer src="{% static 'vendor/katex/contrib/auto-render.min.js' %}"></script>
-  <script defer src="{% static 'js/main.js' %}"></script>
+  <script defer src="{% static 'js/main.js' %}?v={{ STATIC_VERSION }}"></script>
 </head>
 <body class="{% block body_class %}{% endblock %}">
   <a class="skip-link" href="#main">Перейти к содержимому</a>

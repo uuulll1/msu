@@ -2,7 +2,7 @@
 {% load static portal_tags humanize %}
 {% block title %}Конспекты, задачи и обсуждения{% endblock %}
 {% block body_class %}page-home{% endblock %}
-{% block extra_head %}<script defer src="{% static 'js/hero-graphs.js' %}"></script>{% endblock %}
+{% block extra_head %}<script defer src="{% static 'js/hero-graphs.js' %}?v={{ STATIC_VERSION }}"></script>{% endblock %}
 
 {% block content %}
 <section class="hero" aria-labelledby="hero-title">
