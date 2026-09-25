@@ -27,37 +27,32 @@
     });
   });
 
-  /* --- Меню-бургер --- */
+  /* --- Полноэкранное меню --- */
   var burger = document.querySelector("[data-burger]");
-  var nav = document.querySelector("[data-nav]");
-  if (burger && nav) {
-    var closeMenu = function () {
-      burger.setAttribute("aria-expanded", "false");
-      burger.setAttribute("aria-label", "Открыть меню");
-      nav.classList.remove("is-open");
-      document.body.classList.remove("menu-open");
+  var panel = document.querySelector("[data-nav]");
+  var headerEl = document.querySelector("[data-header]");
+  if (burger && panel) {
+    var setMenu = function (open) {
+      burger.setAttribute("aria-expanded", open ? "true" : "false");
+      burger.setAttribute("aria-label", open ? "Закрыть меню" : "Открыть меню");
+      panel.classList.toggle("is-open", open);
+      document.body.classList.toggle("menu-open", open);
+      if (headerEl) headerEl.classList.toggle("menu-is-open", open);
+      if (open) {
+        var field = panel.querySelector("input");
+        if (field && window.innerWidth > 960) field.focus({ preventScroll: true });
+      }
     };
     burger.addEventListener("click", function () {
-      var isOpen = burger.getAttribute("aria-expanded") === "true";
-      if (isOpen) {
-        closeMenu();
-      } else {
-        // Панель меню начинается сразу под шапкой (над ней может быть полоса-дисклеймер)
-        var headerEl = document.querySelector("[data-header]");
-        if (headerEl) {
-          nav.style.setProperty("--nav-top", headerEl.getBoundingClientRect().bottom + "px");
-        }
-        burger.setAttribute("aria-expanded", "true");
-        burger.setAttribute("aria-label", "Закрыть меню");
-        nav.classList.add("is-open");
-        document.body.classList.add("menu-open");
-      }
+      setMenu(burger.getAttribute("aria-expanded") !== "true");
     });
     document.addEventListener("keydown", function (event) {
-      if (event.key === "Escape") closeMenu();
+      if (event.key === "Escape") setMenu(false);
     });
-    window.addEventListener("resize", function () {
-      if (window.innerWidth > 960) closeMenu();
+    panel.querySelectorAll("a").forEach(function (link) {
+      link.addEventListener("click", function () {
+        setMenu(false);
+      });
     });
   }
 
@@ -76,11 +71,11 @@
     });
   });
 
-  /* --- Тень у шапки при прокрутке --- */
+  /* --- Шапка при прокрутке: становится непрозрачной, строка разделов сворачивается --- */
   var header = document.querySelector("[data-header]");
   if (header) {
     var onScroll = function () {
-      header.classList.toggle("is-scrolled", window.scrollY > 8);
+      header.classList.toggle("is-scrolled", window.scrollY > 40);
     };
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });

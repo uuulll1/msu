@@ -121,7 +121,7 @@
     if (width > 640) {
       var labelX = width - 24;
       var labelY = baseY - curve.f(labelX / curve.scaleX, phase) * amp - 12;
-      ctx.font = "italic 15px 'Playfair Display', Georgia, serif";
+      ctx.font = "italic 15px 'Oranienbaum', Georgia, serif";
       ctx.textAlign = "right";
       ctx.fillStyle = "rgba(" + curve.color + ", " + Math.min(curve.alpha + 0.1, 0.75) + ")";
       ctx.fillText(curve.label, labelX, Math.max(18, labelY));
