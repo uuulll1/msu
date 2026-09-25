@@ -198,6 +198,13 @@
   resize();
   canvas.classList.add("is-ready");
   window.addEventListener("resize", resize);
+  // Высота главного экрана меняется и без resize окна (подгрузка шрифтов, перенос строк
+  // заголовка), поэтому следим за размером самого canvas
+  if ("ResizeObserver" in window) {
+    new ResizeObserver(function () {
+      resize();
+    }).observe(canvas);
+  }
 
   document.addEventListener("visibilitychange", function () {
     if (document.hidden) stop();
