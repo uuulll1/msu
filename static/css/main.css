@@ -720,19 +720,37 @@ main {
   color: rgba(255, 255, 255, 0.25);
 }
 
-.hero__pattern {
-  width: 100%;
-  height: 100%;
-  animation: hero-drift 30s ease-in-out infinite alternate;
+/* Без JS: неподвижная координатная сетка */
+.hero__bg {
+  background-image: linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  background-size: 48px 48px;
 }
 
-@keyframes hero-drift {
-  from {
-    transform: scale(1) translateY(0);
-  }
-  to {
-    transform: scale(1.06) translateY(-12px);
-  }
+.hero__canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transition: opacity 1.2s var(--ease);
+}
+
+/* Когда canvas готов, сетку рисует он сам */
+.hero__canvas.is-ready {
+  opacity: 1;
+}
+
+.hero__bg:has(.hero__canvas.is-ready) {
+  background-image: none;
+}
+
+/* Затемнение слева, чтобы графики не спорили с заголовком */
+.hero__bg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(5, 15, 36, 0.55) 0%, rgba(5, 15, 36, 0.15) 55%, transparent 100%);
+  pointer-events: none;
 }
 
 .hero__inner {

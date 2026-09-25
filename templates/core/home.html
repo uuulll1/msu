@@ -1,25 +1,14 @@
 {% extends "base.html" %}
-{% load portal_tags humanize %}
+{% load static portal_tags humanize %}
 {% block title %}Конспекты, задачи и обсуждения{% endblock %}
 {% block body_class %}page-home{% endblock %}
+{% block extra_head %}<script defer src="{% static 'js/hero-graphs.js' %}"></script>{% endblock %}
 
 {% block content %}
 <section class="hero" aria-labelledby="hero-title">
   <div class="hero__bg" aria-hidden="true">
-    {# Абстрактный фон: координатная сетка и графики функций #}
-    <svg class="hero__pattern" viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice">
-      <defs>
-        <pattern id="hero-grid" width="48" height="48" patternUnits="userSpaceOnUse">
-          <path d="M48 0H0V48" fill="none" stroke="currentColor" stroke-width=".6" opacity=".35"/>
-        </pattern>
-      </defs>
-      <rect width="1200" height="800" fill="url(#hero-grid)"/>
-      <path d="M0 520 C 200 380, 320 660, 520 470 S 860 250, 1200 360" fill="none" stroke="var(--c-gold)" stroke-width="2" opacity=".75"/>
-      <path d="M0 600 C 260 560, 380 300, 640 330 S 980 560, 1200 470" fill="none" stroke="#ffffff" stroke-width="1.2" opacity=".35"/>
-      <circle cx="930" cy="250" r="170" fill="none" stroke="#ffffff" stroke-width="1" opacity=".18"/>
-      <circle cx="930" cy="250" r="110" fill="none" stroke="var(--c-gold)" stroke-width="1" opacity=".35"/>
-      <path d="M760 250H1100M930 80V420" stroke="#ffffff" stroke-width=".8" opacity=".25"/>
-    </svg>
+    {# Живой фон: графики функций рисует static/js/hero-graphs.js. Без JS остаётся градиент с сеткой. #}
+    <canvas class="hero__canvas" data-hero-graphs></canvas>
   </div>
 
   <div class="container hero__inner">
